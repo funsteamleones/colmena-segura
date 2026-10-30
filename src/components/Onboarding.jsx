@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAppContext } from '../store/AppContext';
-import { ShieldCheck, Baby, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff } from 'lucide-react';
+import BeeMascot from './BeeMascot';
 
 // ─── PARENT ONBOARDING ────────────────────────────────────────────────────────
 const ParentOnboarding = () => {
@@ -41,13 +42,8 @@ const ParentOnboarding = () => {
       {step === 1 && (
         <div className="flex-col gap-4 animate-fade-in">
           <div style={{ textAlign: 'center' }}>
-            <div style={{
-              background: 'linear-gradient(135deg, #1e3a8a, #3b82f6)',
-              borderRadius: '20px', padding: '16px', display: 'inline-flex', marginBottom: '16px',
-            }}>
-              <ShieldCheck size={36} color="white" />
-            </div>
-            <h1 style={{ fontSize: '22px' }}>Configuración Parental</h1>
+            <BeeMascot mode="shield" size={105} style={{ margin: '0 auto 12px' }} />
+            <h1 style={{ fontSize: '24px', fontWeight: 900 }}>Configuración Parental</h1>
             <p className="text-muted mt-2">Primero, ¿cómo se llama tu hijo/a?</p>
           </div>
           <input
@@ -127,8 +123,8 @@ const ChildOnboarding = () => {
   return (
     <div className="flex-col animate-fade-in" style={{ height: '100%', justifyContent: 'center', padding: '32px 24px', gap: '28px' }}>
       <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: '72px', marginBottom: '12px' }}>🐝</div>
-        <h1 style={{ fontSize: '26px' }}>¡Hola! ¿Cómo te llamas?</h1>
+        <BeeMascot mode="happy" size={120} style={{ margin: '0 auto 12px' }} />
+        <h1 style={{ fontSize: '26px', fontWeight: 900 }}>¡Hola! ¿Cómo te llamas?</h1>
         <p className="text-muted mt-2">Escribe tu nombre para empezar a ganar monedas.</p>
       </div>
       <input
