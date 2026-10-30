@@ -130,6 +130,26 @@ const ParentLogin = () => {
           >
             <ArrowLeft size={18} /> Volver a la vista de {childData.name} ({childData.icon || '🐝'})
           </button>
+
+          <button
+            type="button"
+            onClick={() => setCurrentScreen('admin_dashboard')}
+            style={{
+              padding: '8px',
+              fontSize: '12px',
+              background: 'transparent',
+              border: 'none',
+              color: '#64748B',
+              cursor: 'pointer',
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+            }}
+          >
+            👑 Acceso Fundador / Super Admin
+          </button>
         </div>
       </form>
 

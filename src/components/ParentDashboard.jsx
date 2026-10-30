@@ -456,6 +456,25 @@ const ParentDashboard = () => {
 
           <div className="flex-row gap-2">
             <button
+              onClick={() => setCurrentScreen('admin_dashboard')}
+              title="Panel de Super Admin & Monitoreo Global"
+              style={{
+                background: 'linear-gradient(135deg, rgba(255, 202, 40, 0.2), rgba(245, 158, 11, 0.2))',
+                border: '1px solid rgba(255, 202, 40, 0.4)',
+                borderRadius: '12px',
+                padding: '8px 12px',
+                color: '#FFCA28',
+                fontSize: '12px',
+                fontWeight: 800,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                cursor: 'pointer',
+              }}
+            >
+              <span>👑</span> Admin
+            </button>
+            <button
               onClick={() => setCurrentScreen('child')}
               title="Ver vista del hijo"
               style={{
@@ -1298,6 +1317,63 @@ const ParentDashboard = () => {
                   }}
                 >
                   📋 Ver SQL
+                </button>
+              </div>
+            </div>
+
+            {/* Acceso al Panel de Super Admin & Forzar Actualizaciones */}
+            <div className="card flex-col gap-3 p-4" style={{ borderRadius: '24px', background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)', border: '1px solid rgba(255, 202, 40, 0.3)', color: '#FFFFFF' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '24px' }}>👑</span>
+                  <div>
+                    <h3 style={{ fontSize: '16px', fontWeight: 900, margin: 0, color: '#FFCA28' }}>Panel Super Admin & Monitoreo</h3>
+                    <p style={{ fontSize: '11px', color: '#94A3B8', margin: 0 }}>Supervisión de todas las familias, datos y forzar actualizaciones</p>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => setCurrentScreen('admin_dashboard')}
+                  style={{
+                    flex: 1,
+                    background: 'linear-gradient(135deg, #FFB300, #F59E0B)',
+                    color: '#0F172A',
+                    border: 'none',
+                    borderRadius: '14px',
+                    padding: '12px',
+                    fontWeight: 800,
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  <span>👑</span> Abrir Panel Admin
+                </button>
+
+                <button
+                  onClick={() => {
+                    window.dispatchEvent(new CustomEvent('check-app-update'));
+                  }}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    color: '#FFFFFF',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '14px',
+                    padding: '12px 14px',
+                    fontWeight: 700,
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  <RefreshCw size={14} /> Buscar Actualizaciones
                 </button>
               </div>
             </div>

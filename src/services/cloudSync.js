@@ -134,3 +134,30 @@ export const subscribeToCloudRealtime = (onChildChange, onRequestChange) => {
     client.removeChannel(channel);
   };
 };
+
+// 7. Cargar métricas y todos los registros para el Panel de Super Admin
+export const fetchAdminOverviewData = async () => {
+  const client = getSupabaseClient();
+  if (!client) return null;
+
+  try {
+    const [famRes, chilRes, reqRes, actRes, rewRes] = await Promise.all([
+      client.from('families').select('*').order('created_at', { ascending: false }),
+      client.from('children').select('*').order('updated_at', { ascending: false }),
+      client.from('task_validation_requests').select('*').order('requested_at', { ascending: false }),
+      client.from('activities').select('*'),
+      client.from('rewards').select('*'),
+    ]);
+
+    return {
+      families: famRes.data || [],
+      children: chilRes.data || [],
+      requests: reqRes.data || [],
+      activities: actRes.data || [],
+      rewards: rewRes.data || [],
+    };
+  } catch (err) {
+    console.warn('Error en fetchAdminOverviewData:', err);
+    return null;
+  }
+};
