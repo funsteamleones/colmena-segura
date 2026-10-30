@@ -14,6 +14,14 @@ import {
 } from './educationalTips';
 import { sound } from '../utils/audio';
 import { triggerConfetti } from '../utils/confetti';
+import {
+  saveCloudChild,
+  createCloudTaskRequest,
+  updateCloudTaskRequestStatus,
+  subscribeToCloudRealtime,
+  fetchCloudInitialData,
+  saveCloudFamily,
+} from '../services/cloudSync';
 
 export { DEFAULT_CHILD_ICON, PRESET_ICONS, ACHIEVEMENTS_LIST };
 
@@ -194,6 +202,83 @@ export const AppProvider = ({ children }) => {
   useEffect(() => { save('rewards', rewards); }, [rewards]);
   useEffect(() => { save('history', history); }, [history]);
   useEffect(() => { save('emergencyLock', emergencyLock); }, [emergencyLock]);
+
+  // ─── Cloud Realtime Synchronization (Supabase) ──────────────────────────
+  useEffect(() => {
+    // 1. Cargar datos iniciales desde la nube si existen
+    fetchCloudInitialData().then((cloudData) => {
+      if (cloudData) {
+        if (cloudData.children && cloudData.children.length > 0) {
+          setChildrenList(prev => {
+            const cloudMap = new Map(cloudData.children.map(c => [c.id, {
+              ...c,
+              coins: c.coins ?? 100,
+              completedTaskIds: c.completed_task_ids || [],
+              pendingTaskIds: c.pending_task_ids || [],
+              screenTimeInvestments: c.screen_time_investments || [],
+              screenTimeUsedToday: c.screen_time_used_today || 0,
+            }]));
+            return prev.map(p => cloudMap.get(p.id) ? { ...p, ...cloudMap.get(p.id) } : p);
+          });
+        }
+        if (cloudData.requests && cloudData.requests.length > 0) {
+          setTaskValidationRequests(cloudData.requests.map(r => ({
+            id: r.id,
+            childId: r.child_id,
+            childName: r.child_name,
+            taskTitle: r.task_title,
+            taskCoins: r.task_coins,
+            status: r.status,
+            requestedAt: r.requested_at,
+          })));
+        }
+      }
+    });
+
+    // 2. Suscripción a WebSockets en tiempo real
+    const unsubscribe = subscribeToCloudRealtime(
+      (childPayload) => {
+        const updated = childPayload.new;
+        if (updated && updated.id) {
+          setChildrenList(prev => prev.map(c => c.id === updated.id ? {
+            ...c,
+            name: updated.name || c.name,
+            coins: updated.coins !== undefined ? updated.coins : c.coins,
+            screenTimeUsedToday: updated.screen_time_used_today !== undefined ? updated.screen_time_used_today : c.screenTimeUsedToday,
+            completedTaskIds: updated.completed_task_ids || c.completedTaskIds,
+            pendingTaskIds: updated.pending_task_ids || c.pendingTaskIds,
+            screenTimeInvestments: updated.screen_time_investments || c.screenTimeInvestments,
+          } : c));
+        }
+      },
+      (requestPayload) => {
+        const req = requestPayload.new;
+        if (req && req.id) {
+          setTaskValidationRequests(prev => {
+            const exists = prev.some(r => r.id === req.id);
+            const formatted = {
+              id: req.id,
+              childId: req.child_id,
+              childName: req.child_name,
+              taskTitle: req.task_title,
+              taskCoins: req.task_coins,
+              status: req.status,
+              requestedAt: req.requested_at,
+            };
+            if (exists) {
+              return prev.map(r => r.id === req.id ? formatted : r);
+            }
+            if (req.status === 'pending') {
+              sound.playPop();
+            }
+            return [formatted, ...prev];
+          });
+        }
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
 
   // ─── Theme Handler ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -383,6 +468,11 @@ export const AppProvider = ({ children }) => {
     };
 
     setTaskValidationRequests(prev => [newRequest, ...prev]);
+    createCloudTaskRequest(newRequest);
+    saveCloudChild({
+      ...childData,
+      pendingTaskIds: [...(childData.pendingTaskIds || []), taskId],
+    });
     sound.playPop();
     showToast('¡Misión enviada! Papá/Mamá te otorgará el oro al validarla 🐝', '🕒');
     return true;
@@ -444,6 +534,18 @@ export const AppProvider = ({ children }) => {
       },
       ...prev,
     ]);
+
+    // Sincronizar en la nube
+    updateCloudTaskRequestStatus(requestId, 'approved');
+    const targetChild = childrenList.find(c => c.id === request.childId);
+    if (targetChild) {
+      saveCloudChild({
+        ...targetChild,
+        coins: targetChild.coins + request.taskCoins,
+        completedTaskIds: Array.from(new Set([...(targetChild.completedTaskIds || []), request.taskId])),
+        pendingTaskIds: (targetChild.pendingTaskIds || []).filter(id => id !== request.taskId),
+      });
+    }
 
     sound.playTaskComplete();
     triggerConfetti();
